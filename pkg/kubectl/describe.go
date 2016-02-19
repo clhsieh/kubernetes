@@ -1575,6 +1575,16 @@ func describeNodeResource(nodeNonTerminatedPodsList *api.PodList, node *api.Node
 	fmt.Fprintf(out, "  %s (%d%%)\t%s (%d%%)\t%s (%d%%)\t%s (%d%%)\n",
 		cpuReqs.String(), int64(fractionCpuReqs), cpuLimits.String(), int64(fractionCpuLimits),
 		memoryReqs.String(), int64(fractionMemoryReqs), memoryLimits.String(), int64(fractionMemoryLimits))
+
+    fmt.Fprintln(out, "Remained resources:")
+    fmt.Fprintln(out, "  CPU remained\tMemory remained\tPods remained")
+    fmt.Fprintln(out, "  ------------\t---------------\t-------------")
+    cpuCapacity, memoryCapacity, podsCapacity := node.Status.Capacity[api.ResourceCPU], node.Status.Capacity[api.ResourceMemory], node.Status.Capacity[api.ResourcePods]
+    cpuCapacity.Sub(cpuReqs)
+    memoryCapacity.Sub(memoryReqs)
+    cpuRemained, memoryRemained, podsRemained := cpuCapacity.String(), memoryCapacity.String(), podsCapacity.Value() - int64(len(nodeNonTerminatedPodsList.Items))
+    fmt.Fprintf(out, "  %s\t%s\t%d\n", cpuRemained, memoryRemained, podsRemained)
+
 	return nil
 }
 
